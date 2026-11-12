@@ -23,10 +23,19 @@ def home():
 
 @public_bp.route("/actividades")
 def mostrar_actividades():
+    consulta = Actividad.query
+    buscarNombre = request.args.get("buscar", "").strip() 
+    tienePlazas = request.args.get("plazas")
+    
+    if buscarNombre:
+        consulta = consulta.filter(Actividad.nombre.ilike(f"%{buscarNombre}%")) 
 
-    actividades = Actividad.query.all()
+    if tienePlazas:
+        consulta = consulta.filter(Actividad.plazas_libres > 0)
 
-    deporte_fav = None
+    actividades = consulta.all()
+
+    deporte_fav = None #leer cookie
 
     return render_template(
         "catalogo.html",
@@ -43,7 +52,12 @@ def ver_actividad(act_id):
 
 @public_bp.route("/preferencia/<string:deporte>")
 def guardar_preferencia(deporte):
-    return redirect(url_for("public.mostrar_actividades"))
+    
+    respuesta = make_response(redirect(url_for("public.mostrar_actividades")))
+    respuesta.set_cookie("deporte_fav", value=deporte, max_age=60*60*24*15 , httponly=True, samesite="Lax")
+    
+
+    return respuesta
 
 
 @public_bp.route("/limpiar-preferencia")
@@ -80,23 +94,3 @@ def cancelar_reserva(act_id):
 @login_required
 def confirmar_reservas():
     return redirect(url_for("public.mostrar_actividades"))
-
-
-
-#añadir ruta del catalogo
-@public_bp.route("/catalogo") 
-def mostrar_catalogo(): 
-    buscarNombre = request.args.get("buscar", "").strip() 
-    tienePlazas = request.args.get("plazas_libres")
-
-    consulta = Actividad.query
-    if buscarNombre:
-        consulta = consulta.filter(Actividad.nombre.ilike(f"%{buscarNombre}%")) 
-
-    if tienePlazas:
-        consulta = consulta.filter_by(Actividad.plazas_libres > 0)
-
-    return render_template( 
-        "catalogo.html", 
-        lista_actividades=consulta.order_by(Actividad.nombre).all(),
-    )

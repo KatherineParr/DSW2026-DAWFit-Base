@@ -19,10 +19,13 @@
 
 <!-- TODO (Bloque 1 - Ejercicio 1.1): Añadir formulario GET con campo de texto 'busqueda' y checkbox 'solo_con_plazas' -->
 
-<form method="get" action="{{ url_for('public.mostrar_catalogo') }}"> 
+<form method="get" action="{{ url_for('public.mostrar_actividades') }}"> 
+
   <input type="text" name="buscar" value="{{ busqueda }}" placeholder="Buscar..."> 
-  <input type="checkbox" name="plazas_libres">
-  <label for="plazas_libres">Plazas disponibles</label>
+
+  <input type="checkbox" name="plazas" value="off">
+  <label for="plazas">Plazas disponibles</label>
+
   <button type="submit">Buscar</button> 
 </form>
 
@@ -41,6 +44,11 @@
         <span>({{ act.deporte }}) — <strong>{{ "%.2f"|format(act.cuota) }} €/mes</strong></span>
 
         <!-- TODO (Bloque 1 - Ejercicio 1.2): Mostrar etiqueta '⭐ Tu deporte favorito' si act.deporte coincide con la cookie deporte_fav -->
+        
+        <span class="badge-fav">⭐ Tu deporte favorito</span>
+
+
+
 
         {% if act.plazas_libres > 0 %}
             <span style="color: green; margin-left: 8px;">({{ act.plazas_libres }} plazas libres)</span>
