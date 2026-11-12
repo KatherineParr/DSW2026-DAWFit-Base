@@ -41,3 +41,12 @@ def editar_actividad(act_id):
 def eliminar_actividad(act_id):
     flash("Eliminación pendiente de implementar.", "info")
     return redirect(url_for("public.mostrar_actividades"))
+
+
+# ejercicio/ bloque 2 validacion
+@admin_bp.before_request
+def verificar_permisos_admin():
+    if not current_user.is_authenticated:
+        return login_manager.unauthorized()
+    if not current_user.es_monitor:
+        abort(403)

@@ -11,6 +11,8 @@ from flask import (
 from flask_login import login_required
 from app.models import db, Actividad
 
+
+
 public_bp = Blueprint("public", __name__)
 
 
@@ -78,3 +80,23 @@ def cancelar_reserva(act_id):
 @login_required
 def confirmar_reservas():
     return redirect(url_for("public.mostrar_actividades"))
+
+
+
+#añadir ruta del catalogo
+@public_bp.route("/catalogo") 
+def mostrar_catalogo(): 
+    buscarNombre = request.args.get("buscar", "").strip() 
+    tienePlazas = request.args.get("plazas_libres")
+
+    consulta = Actividad.query
+    if buscarNombre:
+        consulta = consulta.filter(Actividad.nombre.ilike(f"%{buscarNombre}%")) 
+
+    if tienePlazas:
+        consulta = consulta.filter_by(Actividad.plazas_libres > 0)
+
+    return render_template( 
+        "catalogo.html", 
+        lista_actividades=consulta.order_by(Actividad.nombre).all(),
+    )
