@@ -36,7 +36,27 @@ def registro():
 
     form = RegistroForm()
 
+    if form.validate_on_submit():
+        #se instancia el usuario
+        usuario = Usuario(
+            username=form.username.data,
+            email=form.email.data,
+            edad=form.edad.data,
+            rol="socio"
+        )
+        #se cifra la contraseña
+        usuario.set_password(form.password.data)
+
+        #se guardad en la base el usuario 
+        db.session.add(usuario)
+        db.session.commit()
+
+        #se redirige
+        return redirect(url_for("auth.login"))
+
     return render_template("registro.html", form=form)
+
+    
 
 
 @auth_bp.route("/perfil", methods=["GET", "POST"])
@@ -44,6 +64,17 @@ def registro():
 def perfil():
     form = CambiarPasswordForm()
 
+    if form.validate_on_submit():
+        if current_user.check_password(form.password_actual.data):
+            if form.nueva_password.data != form.password_actual.data:
+                current_user.set_password(form.nueva_password.data) #set de la nueva contraseña
+                db.session.commit()
+                flash("La contraseña se actualizo correctamente.", "info")
+                return redirect(url_for("auth.login"))
+            else:
+                flash("La contraseña nueva debe ser diferente a la actual", "error")
+        else:
+            flash("La contraseña actual es incorrecta", "error")
     return render_template("perfil.html", form=form)
 
 
@@ -51,6 +82,7 @@ def perfil():
 @login_required
 def logout():
     logout_user()
+    session.pop("reservas", None) #vaciar reservas
 
     flash("Has cerrado sesión correctamente.", "info")
     return redirect(url_for("public.mostrar_actividades"))
